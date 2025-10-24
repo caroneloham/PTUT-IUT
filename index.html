@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecte d'Infrastructure Docker</title>
+    <style>
+        /* --- Import de la police --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        /* --- Thème Blanc Premium --- */
+        :root {
+            --bg-color: #F8F9FA;
+            --surface-color: #FFFFFF;
+            --primary-color: #0D6EFD;
+            --primary-hover-color: #0B5ED7;
+            --text-color: #212529;
+            --text-muted-color: #6c757d;
+            --border-color: #dee2e6;
+            --success-color: #198754;
+            --subtle-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 4rem 2rem;
+        }
+
+        .container { width: 100%; max-width: 800px; text-align: center; }
+
+        .view {
+            display: none; flex-direction: column; align-items: center;
+            gap: 2.5rem; width: 100%; animation: fadeIn 0.5s ease-in-out;
+        }
+        .view.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; letter-spacing: -1px; }
+        h2 { font-size: 2.5rem; font-weight: 600; letter-spacing: -0.5px; }
+
+        #landing-view p {
+            font-size: 1.2rem; color: var(--text-muted-color);
+            max-width: 550px; margin: 0 auto 2.5rem; line-height: 1.6;
+        }
+
+        .cta-buttons { display: flex; gap: 1.5rem; justify-content: center; }
+
+        .btn {
+            padding: 0.9rem 2.2rem; border: 1px solid transparent; border-radius: 8px;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease; text-decoration: none;
+        }
+        .btn-primary {
+            background-color: var(--primary-color); color: #fff;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover-color); transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.3);
+        }
+        .btn-secondary {
+            background-color: var(--surface-color); color: var(--primary-color);
+            border-color: var(--border-color);
+        }
+        .btn-secondary:hover { border-color: var(--primary-color); transform: translateY(-3px); }
+
+        #machines-container { display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; }
+
+        .machine-card {
+            background-color: var(--surface-color); border-radius: 12px; padding: 1.5rem;
+            border: 1px solid var(--border-color); text-align: left; position: relative;
+            animation: scaleIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: box-shadow 0.3s ease; box-shadow: var(--subtle-shadow);
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .machine-card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;
+        }
+        
+        .service-selector { display: flex; align-items: center; gap: 1rem; }
+        .service-icon { width: 32px; height: 32px; object-fit: contain; }
+        .service-select {
+            font-size: 1.2rem; font-weight: 600; padding: 0.5rem; border-radius: 6px;
+            border: 1px solid var(--border-color); background-color: var(--bg-color);
+        }
+        .service-select optgroup { font-weight: bold; font-style: normal; }
+
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500; color: var(--text-muted-color); }
+        .form-input {
+            width: 100%; padding: 0.8rem 1rem; background-color: var(--bg-color);
+            border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-input:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+        
+        .remove-machine-btn {
+            background: transparent; border: none; color: var(--text-muted-color);
+            font-size: 1.5rem; cursor: pointer; transition: color 0.3s ease;
+        }
+        .remove-machine-btn:hover { color: #dc3545; }
+
+        .config-actions { width: 100%; display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; }
+        
+        #summary-content {
+            width: 100%; text-align: left; background-color: var(--surface-color);
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 2rem; box-shadow: var(--subtle-shadow);
+        }
+        #summary-content pre {
+            background-color: #212529; color: #f8f9fa; padding: 1.5rem; border-radius: 8px;
+            white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .dependency-badge {
+            position: absolute; top: -10px; left: 10px; background-color: var(--success-color);
+            color: white; padding: 3px 8px; font-size: 0.75rem; font-weight: 600;
+            border-radius: 20px; display: none;
+        }
+
+        /* --- NOUVEAU : MODAL POUR LE RÉSEAU --- */
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.4); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+        .modal {
+            background: var(--surface-color); padding: 2rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 500px;
+            text-align: center;
+        }
+        .modal h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+        .modal p { color: var(--text-muted-color); margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- VUE 1: ACCUEIL -->
+        <div id="landing-view" class="view active">
+            <h1>Architecte d'Infrastructure.</h1>
+            <p>Composez, configurez et déployez visuellement votre stack Docker à partir de services pré-configurés et fiables.</p>
+            <div class="cta-buttons">
+                <button id="quick-start-btn" class="btn btn-primary">Stack de Démarrage</button>
+                <button id="custom-start-btn" class="btn btn-secondary">Commencer de Zéro</button>
+            </div>
+        </div>
+
+        <!-- VUE 2: CONFIGURATION -->
+        <div id="config-view" class="view">
+            <h2>Composez votre Architecture</h2>
+            <div id="machines-container"></div>
+            <div class="config-actions">
+                <button id="add-machine-btn" class="btn btn-secondary">Ajouter un Service</button>
+                <button id="generate-btn" class="btn btn-primary">Générer la Configuration</button>
+            </div>
+        </div>
+        
+        <!-- VUE 3: RÉSUMÉ -->
+        <div id="summary-view" class="view">
+            <h2>Configuration Finale</h2>
+            <div id="summary-content"><pre id="summary-code"></pre></div>
+            <div class="config-actions">
+                <button id="back-to-config-btn" class="btn btn-secondary">Modifier</button>
+                <button class="btn btn-primary">Lancer le Déploiement</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIGURATION RÉSEAU -->
+    <div id="network-modal-backdrop" class="modal-backdrop">
+        <div class="modal">
+            <h3>Configurer le Réseau de l'Infrastructure</h3>
+            <p>Définissez une plage d'adresses (format CIDR) qui sera utilisée pour l'attribution automatique des IPs à vos services.</p>
+            <div class="form-group" style="text-align: left;">
+                <label for="network-cidr">Plage d'adresses réseau (CIDR)</label>
+                <input type="text" id="network-cidr" class="form-input" placeholder="Ex: 192.168.10.0/24">
+            </div>
+            <div class="cta-buttons">
+                <button id="apply-network-btn" class="btn btn-primary">Appliquer</button>
+                <button id="default-network-btn" class="btn btn-secondary">Utiliser par Défaut</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODÈLE DE CARTE SERVICE (CACHÉ) -->
+    <template id="machine-card-template">
+        <div class="machine-card">
+            <span class="dependency-badge">Dépendance auto.</span>
+            <div class="machine-card-header">
+                <div class="service-selector">
+                    <img src="" alt="Icône" class="service-icon">
+                    <select class="service-select"></select>
+                </div>
+                <button class="remove-machine-btn" title="Supprimer le service">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Nom du conteneur</label>
+                <input type="text" class="form-input machine-name">
+            </div>
+            <div class="form-group">
+                <label>Adresse IP (optionnel)</label>
+                <input type="text" class="form-input machine-ip" placeholder="Automatique">
+            </div>
+            <div class="form-group">
+                <label>Réseau</label>
+                <input type="text" class="form-input machine-network" value="default_network">
+            </div>
+        </div>
+    </template>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- CATALOGUE DE SERVICES ---
+        const servicesCatalogue = {
+            'Socle / Admin': [
+                { id: 'portainer', name: 'Portainer CE', icon: 'https://cdn.worldvectorlogo.com/logos/portainer-icon.svg', dependency: null },
+                { id: 'traefik', name: 'Traefik', icon: 'https://cdn.svgporn.com/logos/traefik-icon.svg', dependency: null }
+            ],
+            'Web': [
+                { id: 'nginx', name: 'NGINX', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg', dependency: null },
+                { id: 'wordpress', name: 'WordPress', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/wordpress/wordpress-plain.svg', dependency: 'mariadb' }
+            ],
+            'Bases de données': [
+                { id: 'mariadb', name: 'MariaDB', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mariadb/mariadb-original.svg', dependency: null },
+                { id: 'postgresql', name: 'PostgreSQL', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg', dependency: null }
+            ],
+            'Collaboration / Fichiers': [
+                { id: 'nextcloud', name: 'Nextcloud', icon: 'https://cdn.worldvectorlogo.com/logos/nextcloud-2.svg', dependency: 'mariadb_if_needed' },
+                { id: 'samba', name: 'Samba', icon: 'https://icon.icepanel.io/Technology/svg/Samba.svg', dependency: null }
+            ],
+            'Observabilité': [
+                { id: 'grafana-loki', name: 'Grafana + Loki', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg', dependency: null },
+                { id: 'prometheus', name: 'Prometheus', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg', dependency: null }
+            ],
+            'Réseau': [
+                { id: 'debian-router', name: 'Routeur Debian', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/debian/debian-original.svg', dependency: null }
+            ]
+        };
+
+        const getAllServices = () => Object.values(servicesCatalogue).flat();
+        
+        // --- SÉLECTION DES ÉLÉMENTS DU DOM ---
+        const views = { landing: document.getElementById('landing-view'), config: document.getElementById('config-view'), summary: document.getElementById('summary-view') };
+        const buttons = { quickStart: document.getElementById('quick-start-btn'), customStart: document.getElementById('custom-start-btn'), addMachine: document.getElementById('add-machine-btn'), generate: document.getElementById('generate-btn'), backToConfig: document.getElementById('back-to-config-btn'), applyNetwork: document.getElementById('apply-network-btn'), defaultNetwork: document.getElementById('default-network-btn') };
+        const containers = { machines: document.getElementById('machines-container') };
+        const templates = { machineCard: document.getElementById('machine-card-template') };
+        const networkModal = document.getElementById('network-modal-backdrop');
+        const networkInputCIDR = document.getElementById('network-cidr');
+        const summaryOutput = document.getElementById('summary-code');
+        
+        // --- ÉTAT DE L'APPLICATION ---
+        let customNetwork = null;
+
+        // --- FONCTIONS PRINCIPALES ---
+        const showView = (viewName) => {
+            Object.values(views).forEach(view => view.classList.remove('active'));
+            views[viewName].classList.add('active');
+        };
+
+        const checkForExistingDB = () => {
+            const existingServices = Array.from(containers.machines.querySelectorAll('.service-select')).map(select => select.value);
+            return existingServices.includes('mariadb') || existingServices.includes('postgresql');
+        };
+
+        const addMachineCard = (serviceId, isDependency = false) => {
+            const serviceInfo = getAllServices().find(s => s.id === serviceId);
+            if (!serviceInfo) return;
+
+            const cardClone = templates.machineCard.content.cloneNode(true);
+            const cardElement = cardClone.querySelector('.machine-card');
+            const serviceSelect = cardElement.querySelector('.service-select');
+            const serviceIcon = cardElement.querySelector('.service-icon');
+            const nameInput = cardElement.querySelector('.machine-name');
+            const ipInput = cardElement.querySelector('.machine-ip');
+            const networkInput = cardElement.querySelector('.machine-network');
+            
+            for (const category in servicesCatalogue) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = category;
+                servicesCatalogue[category].forEach(service => {
+                    optgroup.appendChild(new Option(service.name, service.id));
+                });
+                serviceSelect.appendChild(optgroup);
+            }
+
+            const updateServiceDisplay = (selectedId) => {
+                const newService = getAllServices().find(s => s.id === selectedId);
+                serviceIcon.src = newService.icon;
+                if (!nameInput.value || !isDependency) {
+                    nameInput.value = `${newService.id}-service`;
+                }
+            };
+
+            serviceSelect.addEventListener('change', (e) => updateServiceDisplay(e.target.value));
+            serviceSelect.value = serviceId;
+            updateServiceDisplay(serviceId);
+
+            if (customNetwork) {
+                const nextIp = `${customNetwork.base}.${customNetwork.counter}`;
+                ipInput.placeholder = `Auto : ${nextIp}`;
+                networkInput.value = `${customNetwork.base}.0/${customNetwork.mask}`;
+                cardElement.dataset.autoIp = nextIp;
+                customNetwork.counter++;
+            }
+
+            if(isDependency) {
+                cardElement.querySelector('.dependency-badge').style.display = 'block';
+                serviceSelect.disabled = true; // On ne peut pas changer un service de dépendance
+            }
+
+            cardElement.querySelector('.remove-machine-btn').addEventListener('click', () => cardElement.remove());
+            containers.machines.appendChild(cardClone);
+            cardElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+            if (!isDependency && serviceInfo.dependency) {
+                if (serviceInfo.dependency === 'mariadb') addMachineCard('mariadb', true);
+                else if (serviceInfo.dependency === 'mariadb_if_needed' && !checkForExistingDB()) addMachineCard('mariadb', true);
+            }
+        };
+        
+        const startConfiguration = () => {
+            containers.machines.innerHTML = '';
+            addMachineCard('traefik');
+            networkModal.style.display = 'none';
+            showView('config');
+        };
+        
+        // --- GESTIONNAIRES D'ÉVÉNEMENTS ---
+        buttons.quickStart.addEventListener('click', () => {
+            customNetwork = null;
+            containers.machines.innerHTML = '';
+            addMachineCard('traefik');
+            addMachineCard('nginx');
+            addMachineCard('postgresql');
+            showView('config');
+        });
+
+        buttons.customStart.addEventListener('click', () => {
+            customNetwork = null;
+            networkInputCIDR.value = '';
+            networkModal.style.display = 'flex';
+        });
+        
+        buttons.applyNetwork.addEventListener('click', () => {
+            const cidr = networkInputCIDR.value;
+            const cidrRegex = /^(\d{1,3}\.\d{1,3}\.\d{1,3})\.(\d{1,3})\/(\d{1,2})$/;
+            const match = cidr.match(cidrRegex);
+
+            if (match && parseInt(match[3]) >= 8 && parseInt(match[3]) <= 30) {
+                customNetwork = { base: match[1], mask: match[3], counter: 1 };
+                startConfiguration();
+            } else {
+                alert("Format CIDR invalide. Exemple valide : 192.168.10.0/24");
+            }
+        });
+
+        buttons.defaultNetwork.addEventListener('click', () => {
+            customNetwork = null;
+            startConfiguration();
+        });
+
+        buttons.addMachine.addEventListener('click', () => addMachineCard('nginx'));
+        buttons.backToConfig.addEventListener('click', () => showView('config'));
+
+        buttons.generate.addEventListener('click', () => {
+            if (containers.machines.childElementCount === 0) {
+                alert('Veuillez ajouter au moins un service.');
+                return;
+            }
+            
+            const infraConfig = { services: {} };
+            containers.machines.querySelectorAll('.machine-card').forEach(card => {
+                const id = card.querySelector('.service-select').value;
+                const name = card.querySelector('.machine-name').value;
+                const ip = card.querySelector('.machine-ip').value || card.dataset.autoIp || 'auto';
+                const network = card.querySelector('.machine-network').value;
+                
+                infraConfig.services[name] = { service: id, image: `${id}:latest`, ip: ip, network };
+            });
+            
+            summaryOutput.textContent = JSON.stringify(infraConfig, null, 2);
+            showView('summary');
+        });
+    });
+    </script>
+</body>
+</html>
